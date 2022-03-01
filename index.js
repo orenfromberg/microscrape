@@ -7,35 +7,27 @@ const store_codes = {
     "Rockville, MD": "085"
 }
 
-// const products = {
-//     "raspberry-pi-pico-microcontroller-development-board": "https://www.microcenter.com/product/632771/raspberry-pi-pico-microcontroller-development-board",
-//     "raspberry-pi-zero-2-w": "https://www.microcenter.com/product/643085/raspberry-pi-zero-2-w",
-//     "raspberry-pi-4-model-b-4gb-ddr4": "https://www.microcenter.com/product/609038/raspberry-pi-4-model-b-4gb-ddr4",
-//     "raspberry-pi-400-includes-raspbery-pi-400-with-4gb-ram,-micro-sd-card-slot,-2-usb-30-ports,-1-usb-20-port,-usb-c-power-required": "https://www.microcenter.com/product/633751/raspberry-pi-400-includes-raspbery-pi-400-with-4gb-ram,-micro-sd-card-slot,-2-usb-30-ports,-1-usb-20-port,-usb-c-power-required",
-//     "raspberry-pi-400-personal-computer-kit": "https://www.microcenter.com/product/631204/raspberry-pi-400-personal-computer-kit"
-// }
-
 const products_urls = [
     "https://www.microcenter.com/product/632771/raspberry-pi-pico-microcontroller-development-board",
     "https://www.microcenter.com/product/643085/raspberry-pi-zero-2-w",
     "https://www.microcenter.com/product/609038/raspberry-pi-4-model-b-4gb-ddr4",
+    "https://www.microcenter.com/product/622539/pi4modelB8gb",
     "https://www.microcenter.com/product/633751/raspberry-pi-400-includes-raspbery-pi-400-with-4gb-ram,-micro-sd-card-slot,-2-usb-30-ports,-1-usb-20-port,-usb-c-power-required",
     "https://www.microcenter.com/product/631204/raspberry-pi-400-personal-computer-kit"
 ]
 
-
-const scrape_inventory_from_webpage = html => {
+const scrape_inventory = html => {
     const dom = new JSDOM(html);
     const result = dom.window.document.querySelector(".inventory");
     return (result ? result.textContent.trim() : "OUT OF STOCK");
 }
 
-const check_inventory_from_url = (url, location) => {
+const fetch_inventory = (url, store_code) => {
     const options = {
         "headers": {
             "Accept": "text/html",
             "Cache-Control": "max-age=0",
-            "Cookie": `storeSelected=${store_codes[location]}`
+            "Cookie": `storeSelected=${store_code}`
         },
         "method": "GET",
     }
@@ -45,11 +37,22 @@ const check_inventory_from_url = (url, location) => {
         .then(html => {
             return ({
                 url,
-                location,
+                store_code,
                 date: new Date(),
-                inventory: scrape_inventory_from_webpage(html)
+                inventory: scrape_inventory(html)
             })
         })
 }
 
-Promise.all(products_urls.map(url => (check_inventory_from_url(url, "Rockville, MD")))).then(values => console.log(values))
+const delay = (t, v) => {
+    return new Promise(resolve => { 
+        setTimeout(resolve.bind(null, v), t)
+    });
+ }
+
+const fetch_inventory_with_random_delay = (url, store) => {
+    const random_delay = Math.random() * 10000;
+    return delay(random_delay).then(() => fetch_inventory(url, store))
+}
+
+Promise.all(products_urls.map(url => (fetch_inventory_with_random_delay(url, store_codes["Rockville, MD"])))).then(values => console.log(values))
