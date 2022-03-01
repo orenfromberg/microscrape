@@ -5,12 +5,15 @@
     "main": "index.js",
     "scripts": {
         "start": "node index.js",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "mocha"
     },
     "author": "",
     "license": "ISC",
     "dependencies": {
         "jsdom": "^19.0.0",
         "node-fetch": "^2.6.7"
+    },
+    "devDependencies": {
+        "mocha": "^9.2.1"
     }
 }
