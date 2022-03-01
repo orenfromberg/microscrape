@@ -1,44 +1,46 @@
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
+const fetch = require('node-fetch');
 
 const store_codes = {
+    "Tustin, CA": "101",
     "Rockville, MD": "085"
 }
 
 const products = {
-    "pico": "https://www.microcenter.com/product/632771/raspberry-pi-pico-microcontroller-development-board",
-    "zero": "https://www.microcenter.com/product/643085/raspberry-pi-zero-2-w"
+    "raspberry-pi-pico-microcontroller-development-board": "https://www.microcenter.com/product/632771/raspberry-pi-pico-microcontroller-development-board",
+    "raspberry-pi-zero-2-w": "https://www.microcenter.com/product/643085/raspberry-pi-zero-2-w",
+    "raspberry-pi-4-model-b-4gb-ddr4": "https://www.microcenter.com/product/609038/raspberry-pi-4-model-b-4gb-ddr4",
+    "raspberry-pi-400-includes-raspbery-pi-400-with-4gb-ram,-micro-sd-card-slot,-2-usb-30-ports,-1-usb-20-port,-usb-c-power-required": "https://www.microcenter.com/product/633751/raspberry-pi-400-includes-raspbery-pi-400-with-4gb-ram,-micro-sd-card-slot,-2-usb-30-ports,-1-usb-20-port,-usb-c-power-required",
+    "raspberry-pi-400-personal-computer-kit": "https://www.microcenter.com/product/631204/raspberry-pi-400-personal-computer-kit"
 }
 
-fetch(products["pico"], {
-        // "credentials": "include",
+const scrape_inventory = html => {
+    const dom = new JSDOM(html);
+    const result = dom.window.document.querySelector(".inventory");
+    return (result ? result.textContent.trim() : "OUT OF STOCK");
+}
+
+const check_inventory = (product, location) => {
+    const options = {
         "headers": {
-            // "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:97.0) Gecko/20100101 Firefox/97.0",
-            // "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             "Accept": "text/html",
-            // "Accept-Language": "en-US,en;q=0.5",
-            // "Upgrade-Insecure-Requests": "1",
-            // "Sec-Fetch-Dest": "document",
-            // "Sec-Fetch-Mode": "navigate",
-            // "Sec-Fetch-Site": "same-origin",
             "Cache-Control": "max-age=0",
-            // "Cookie": "asusSP=; myStore=false; rpp=24; ut=MjE3NTk1ODk3OTIyNDgwMA==; isOnWeb=False; asusSP=; isMobile=false; flixgvid=flixed9e5c45000000.63733762; storeSelected=085; SortBy=match; rearview=643085,632771; viewtype=grid; T632771=UmFzcGJlcnJ5IFBpIFBpY28gTWljcm9jb250cm9sbGVyIERldmVsb3BtZW50IEJvYXJk; S632771=223214; T643085=UmFzcGJlcnJ5IFBpIFplcm8gMiBX; S643085=334904"
-            "Cookie": `storeSelected=${store_codes["Rockville, MD"]}`
+            "Cookie": `storeSelected=${store_codes[location]}`
         },
-        // "referrer": "https://www.microcenter.com/search/search_results.aspx?Ntk=all&sortby=match&N=4294910344+4294819333&myStore=false",
         "method": "GET",
-        // "mode": "cors"
-    })
-    .then(response => (response.blob()))
-    .then(blob => (blob.text()))
-    .then(html => {
-        const dom = new JSDOM(html);
-        const result = dom.window.document.querySelector("span.inventoryCnt");
-        if (result !== null) {
-            console.log(result.textContent)
-        } else {
-            console.log("OUT OF STOCK")
-        }
-        // console.log(dom.window.document.querySelector("span.inventoryCnt"));
-        // console.log(html)
-    })
+    }
+    return fetch(products[product], options)
+        .then(response => (response.blob()))
+        .then(blob => (blob.text()))
+        .then(html => {
+            return ({
+                product,
+                location,
+                date: new Date(),
+                inventory: scrape_inventory(html)
+            })
+        })
+}
+
+Promise.all(Object.keys(products).map(product => (check_inventory(product, "Rockville, MD")))).then(values => console.log(values))
