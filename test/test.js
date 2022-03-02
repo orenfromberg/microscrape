@@ -23,7 +23,7 @@ describe('microcenter', function () {
             moxios.uninstall()
         });
 
-        it('handles a 500 response', (done) => {
+        it('throws an error upon a 500 response', (done) => {
             moxios.stubRequest(products_urls[0], {
                 status: 500,
             });
