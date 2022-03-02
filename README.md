@@ -1,0 +1,4 @@
+# microscrape
+
+## TODOs
+* scrape price
