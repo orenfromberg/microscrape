@@ -1,11 +1,10 @@
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
-const axios = require('axios');
 const store_codes = require('./stores.json');
 const products_urls = require('./products.json');
 
 const scrape_inventory = html => {
-    const dom = new JSDOM(html); // TODO handle any thrown errors
+    const dom = new JSDOM(html);
     const result = dom.window.document.querySelector(".inventory");
     if (!result) {
         throw new Error("can't select class .inventory");
@@ -28,7 +27,7 @@ const get_inventory = text => {
     }
 }
 
-const fetch_inventory = (url, store_code) => {
+const fetch_inventory = (axios, url, store_code) => {
     return axios({
         method: 'get',
         url: products_urls[0],
@@ -51,37 +50,6 @@ const fetch_inventory = (url, store_code) => {
         date: new Date(),
         inventory: scrape_inventory(html)
     }))
-    .catch(handle_request_error);
-}
-
-const handle_request_error = error => {
-    if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        console.log(error.response.data);
-        console.log(error.response.status);
-        console.log(error.response.headers);
-      } else if (error.request) {
-        // The request was made but no response was received
-        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-        // http.ClientRequest in node.js
-        console.log(error.request);
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        console.log('Error', error.message);
-      }
-      console.log(error.config);
-}
-
-const delay = (t, v) => {
-    return new Promise(resolve => {
-        setTimeout(resolve.bind(null, v), t)
-    });
-}
-
-const fetch_inventory_with_random_delay = (url, store) => {
-    const random_delay = Math.random() * 10000;
-    return delay(random_delay).then(() => fetch_inventory(url, store))
 }
 
 module.exports = {
@@ -90,5 +58,4 @@ module.exports = {
     scrape_inventory,
     get_inventory,
     fetch_inventory,
-    fetch_inventory_with_random_delay
 }
