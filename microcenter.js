@@ -1,20 +1,8 @@
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const axios = require('axios');
-
-const store_codes = {
-    "Tustin, CA": "101",
-    "Rockville, MD": "085"
-}
-
-const products_urls = [
-    "https://www.microcenter.com/product/632771/raspberry-pi-pico-microcontroller-development-board",
-    "https://www.microcenter.com/product/643085/raspberry-pi-zero-2-w",
-    "https://www.microcenter.com/product/609038/raspberry-pi-4-model-b-4gb-ddr4",
-    "https://www.microcenter.com/product/622539/pi4modelB8gb",
-    "https://www.microcenter.com/product/633751/raspberry-pi-400-includes-raspbery-pi-400-with-4gb-ram,-micro-sd-card-slot,-2-usb-30-ports,-1-usb-20-port,-usb-c-power-required",
-    "https://www.microcenter.com/product/631204/raspberry-pi-400-personal-computer-kit"
-]
+const store_codes = require('./stores.json');
+const products_urls = require('./products.json');
 
 const scrape_inventory = html => {
     const dom = new JSDOM(html); // TODO handle any thrown errors
@@ -47,7 +35,7 @@ const fetch_inventory = (url, store_code) => {
         headers: {
             "Accept": "text/html",
             "Cache-Control": "max-age=0",
-            "Cookie": `storeSelected=${store_codes["Rockville, MD"]}`
+            "Cookie": `storeSelected=${store_code}`
         }
     })
     .then(response => {
