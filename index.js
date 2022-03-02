@@ -9,4 +9,7 @@ const fetch_inventory_in_rockville = url => {
 }
 
 const promises = products_urls.map(fetch_inventory_in_rockville)
-Promise.all(promises).then(values => console.log(values))
+
+// Promise.all(promises).then(values => console.log(values))
+
+fetch_inventory_in_rockville(products_urls[0]).then(values => console.log(values));
