@@ -14,16 +14,16 @@ const scrape_inventory = html => {
 }
 
 const get_inventory = text => {
-    const in_stock = /(?<quantity>\d+) NEW IN STOCK/mg;
+    const in_stock = /(?<quantity>\d+\+?) NEW IN STOCK/mg;
     const sold_out = /SOLD OUT/mg;
 
     const match = in_stock.exec(text);
     if (match) {
-        return parseInt(match.groups.quantity);
+        return match.groups.quantity;
     } else if (sold_out.exec(text)) {
-        return 0;
+        return "0";
     } else {
-        throw new Error("regexes did not match text");
+        throw new Error(`regexes did not match text: ${text}`);
     }
 }
 

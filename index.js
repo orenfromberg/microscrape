@@ -5,12 +5,12 @@ const {
 } = require('./microcenter');
 const axios = require('axios');
 
-const fetch_inventory_in_rockville = url => {
-    return fetch_inventory(axios, url, store_codes["Rockville, MD"])
+const get_inventory = url => {
+    return fetch_inventory(axios, url, store_codes["Brentwood, MO"])
 }
 
-// const promises = products_urls.map(fetch_inventory_in_rockville)
+const promises = products_urls.map(get_inventory)
 
-// Promise.all(promises).then(values => console.log(values))
+Promise.all(promises).then(values => console.log(values))
 
-fetch_inventory_in_rockville(products_urls[0]).then(values => console.log(values));
+// get_inventory(products_urls[0]).then(values => console.log(values));
