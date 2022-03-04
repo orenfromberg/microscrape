@@ -30,7 +30,7 @@ const get_inventory = text => {
 const fetch_inventory = (axios, url, store_code) => {
     return axios({
         method: 'get',
-        url: products_urls[0],
+        url: url,
         headers: {
             "Accept": "text/html",
             "Cache-Control": "max-age=0",
