@@ -1,5 +1,6 @@
 var assert = require('assert');
 const fs = require('fs');
+const fsPromises = fs.promises;
 const { it } = require('mocha');
 const axios = require('axios');
 const moxios = require('moxios');
@@ -23,7 +24,87 @@ describe('microcenter', function () {
             moxios.uninstall()
         });
 
-        it('throws an error upon a 500 response', (done) => {
+        // it('Succeeds upon a 200 response with a good response object', (done) => {
+        //     fsPromises.readFile('./test/response.txt').then((text) => {
+        //         moxios.withMock(function () {
+        //             let onFulfilled = sinon.spy()
+        //             fetch_inventory(axios, products_urls[0], store_codes["Rockville, MD"]).then(onFulfilled)
+
+        //             moxios.wait(function () {
+        //                 let request = moxios.requests.mostRecent()
+        //                 request.respondWith({
+        //                     status: 200,
+        //                     response: {
+        //                         data: text
+        //                     }
+        //                 })
+        //                     .then(function () {
+        //                         equal(onFulfilled.called, true)
+        //                         done()
+        //                     })
+        //             })
+        //         })
+        //     })
+        //     .catch(error => {
+        //         console.error(error);
+        //     })
+        // });
+
+        it('Throws an error upon a 200 response with a bad response object', (done) => {
+            moxios.stubRequest(products_urls[0], {
+                status: 200,
+            });
+
+            let onFulfilled = sinon.spy();
+            fetch_inventory(axios, products_urls[0], store_codes["Rockville, MD"])
+                .catch(onFulfilled);
+
+            moxios.wait(() => {
+                assert.match(
+                    onFulfilled.getCall(0).args[0].toString(),
+                    /response object is bad/
+                );
+                done();
+            });
+        });
+
+        it('Throws an error upon a 301 response', (done) => {
+            moxios.stubRequest(products_urls[0], {
+                status: 301,
+            });
+
+            let onFulfilled = sinon.spy();
+            fetch_inventory(axios, products_urls[0], store_codes["Rockville, MD"])
+                .catch(onFulfilled);
+
+            moxios.wait(() => {
+                assert.match(
+                    onFulfilled.getCall(0).args[0].toString(),
+                    /Request failed with status code 301/
+                );
+                done();
+            });
+        });
+
+        it('Throws an error upon a 400 response', (done) => {
+            moxios.stubRequest(products_urls[0], {
+                status: 400,
+            });
+
+            let onFulfilled = sinon.spy();
+            fetch_inventory(axios, products_urls[0], store_codes["Rockville, MD"])
+                .catch(onFulfilled);
+
+            moxios.wait(() => {
+                assert.match(
+                    onFulfilled.getCall(0).args[0].toString(),
+                    /Request failed with status code 400/
+                );
+                done();
+            });
+        });
+
+        it('Throws an error upon a 500 response', (done) => {
             moxios.stubRequest(products_urls[0], {
                 status: 500,
             });
@@ -34,7 +115,7 @@ describe('microcenter', function () {
 
             moxios.wait(() => {
                 assert.match(
-                    onFulfilled.getCall(0).args[0].toString(), 
+                    onFulfilled.getCall(0).args[0].toString(),
                     /Request failed with status code 500/
                 );
                 done();
@@ -62,6 +143,7 @@ describe('microcenter', function () {
             const text_contents = [
                 '12 NEW IN STOCK at Rockville Store - Buy In Store',
                 '0 NEW IN STOCK at Rockville Store',
+                '25+ NEW IN STOCK at Houston Store Located In Aisle 28►VIEW MAP',
                 'SOLD OUT at Rockville Store',
                 '10 NEW IN STOCK at Rockville Store Located In DIY►VIEW MAP'
             ];
@@ -72,7 +154,7 @@ describe('microcenter', function () {
                     console.debug(`DEBUG: got ${quantity} from \"${text}\"`)
                     return quantity;
                 }),
-                [12, 0, 0, 10]
+                ["12", "0", "25+", "0", "10"]
             );
         });
 
